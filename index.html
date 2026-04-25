@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>StudyDesk</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="bg-mesh"></div>
+<div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:16px;position:relative;z-index:1;">
+  <div style="font-size:60px;">📚</div>
+  <div style="font-size:24px;font-weight:700;color:var(--accent2);">StudyDesk</div>
+  <div style="color:var(--text3);font-size:14px;">กำลังโหลด...</div>
+</div>
+<script src="auth.js"></script>
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    if (isLoggedIn()) {
+      window.location.href = 'dashboard.html';
+    } else {
+      window.location.href = 'login.html';
+    }
+  });
+</script>
+</body>
+</html>
