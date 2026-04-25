@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>เข้าสู่ระบบ — ClassMate</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="bg-mesh"></div>
+
+<div class="auth-page">
+  <div class="auth-card">
+    <!-- Logo -->
+    <div class="logo">
+      <div class="logo-icon">📚</div>
+      <div>
+        <div class="logo-text">ClassMate</div>
+        <div class="logo-sub">ระบบจัดการการเรียนของฉัน</div>
+      </div>
+    </div>
+
+    <h1 class="auth-title">ยินดีต้อนรับกลับ 👋</h1>
+    <p class="auth-subtitle">เข้าสู่ระบบเพื่อจัดการการบ้านและตารางเรียน</p>
+
+    <!-- Google-style login button -->
+
+    <div class="divider">หรือเข้าสู่ระบบด้วยอีเมล</div>
+
+    <!-- Login Form -->
+    <div class="form-group">
+      <label class="form-label">📧 อีเมล</label>
+      <div class="input-icon-wrap">
+        <span class="input-icon">✉️</span>
+        <input id="loginEmail" type="email" class="form-input"
+               placeholder="your@email.com" autocomplete="email">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">🔑 รหัสผ่าน</label>
+      <div class="input-icon-wrap">
+        <span class="input-icon">🔒</span>
+        <input id="loginPass" type="password" class="form-input"
+               placeholder="รหัสผ่านของคุณ" autocomplete="current-password">
+        <button class="input-toggle" onclick="togglePass('loginPass', this)">👁️</button>
+      </div>
+    </div>
+
+    <div class="check-row">
+      <label class="check-label">
+        <input type="checkbox" id="rememberMe">
+        <span class="checkmark" id="rememberCheck">✓</span>
+        จดจำการเข้าสู่ระบบ
+      </label>
+      <a href="#" class="forgot-link" onclick="forgotPass()">ลืมรหัสผ่าน?</a>
+    </div>
+
+    <button class="btn btn-primary" onclick="doLogin()">
+      🚀 เข้าสู่ระบบ
+    </button>
+
+    <div class="link-row">
+      ยังไม่มีบัญชี? <a href="register.html">สมัครสมาชิกฟรี →</a>
+    </div>
+
+    <!-- Demo hint -->
+    <div style="margin-top:20px; padding:14px; background:rgba(124,111,247,0.08);
+                border-radius:10px; border:1px solid rgba(124,111,247,0.2);
+                font-size:12px; color:var(--text3); text-align:center;">
+      💡 ทดลองใช้: กรอก <strong style="color:var(--accent2)">demo@study.com</strong> / <strong style="color:var(--accent2)">demo1234</strong>
+    </div>
+  </div>
+</div>
+
+<script src="auth.js"></script>
+<script>
+// Auto-fill if remembered
+window.addEventListener('DOMContentLoaded', () => {
+  redirectIfLoggedIn();
+  const rem = getRemembered();
+  if (rem) {
+    document.getElementById('loginEmail').value = rem.email;
+    document.getElementById('rememberMe').checked = true;
+    updateCheck();
+  }
+
+  // Create demo account if not exists
+  const users = getUsers();
+  if (!users.find(u => u.email === 'demo@study.com')) {
+    register({ name: 'Demo Student', email: 'demo@study.com',
+               gmail: 'demo@gmail.com', password: 'demo1234', grade: 'ม.3' });
+  }
+});
+
+document.getElementById('rememberMe').addEventListener('change', updateCheck);
+
+function updateCheck() {
+  const cb = document.getElementById('rememberMe');
+  const mark = document.getElementById('rememberCheck');
+  mark.style.opacity = cb.checked ? '1' : '0.3';
+}
+updateCheck();
+
+function togglePass(id, btn) {
+  const inp = document.getElementById(id);
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  btn.textContent = inp.type === 'password' ? '👁️' : '🙈';
+}
+
+function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPass').value;
+  const remember = document.getElementById('rememberMe').checked;
+
+  if (!email || !password) {
+    showToast('กรุณากรอกข้อมูลให้ครบ', 'error'); return;
+  }
+
+  const result = login({ email, password, remember });
+  if (result.ok) {
+    showToast(`ยินดีต้อนรับ ${result.user.name}! 🎉`, 'success', 1500);
+    setTimeout(() => window.location.href = 'dashboard.html', 1200);
+  } else {
+    showToast(result.msg, 'error');
+  }
+}
+
+function loginWithGoogle() {
+  showToast('ระบบ Google OAuth จำเป็นต้องมี Server ครับ — ลองใช้อีเมลธรรมดาก่อนนะ 😊', 'info', 4000);
+}
+
+function forgotPass() {
+  showToast('กรุณาติดต่อผู้ดูแลระบบหรือสมัครบัญชีใหม่ 📧', 'info');
+}
+
+// Enter key submit
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+</script>
+</body>
+</html>
