@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — StudyDesk</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="bg-mesh"></div>
+
+<!-- ===== SIDEBAR ===== -->
+<div class="dash-layout">
+<aside class="sidebar" id="sidebar">
+  <div class="logo">
+    <div class="logo-icon">📚</div>
+    <div>
+      <div class="logo-text">StudyDesk</div>
+      <div class="logo-sub" id="sidebarGrade">ระดับชั้น —</div>
+    </div>
+  </div>
+
+  <span class="nav-section-title">เมนูหลัก</span>
+  <a class="nav-item active" onclick="showSection('home')" href="#">
+    <span class="nav-icon">🏠</span> หน้าหลัก
+  </a>
+  <a class="nav-item" onclick="showSection('homework')" href="#">
+    <span class="nav-icon">📝</span> การบ้านทั้งหมด
+    <span class="nav-badge" id="hwBadge">0</span>
+  </a>
+  <a class="nav-item" onclick="showSection('schedule')" href="#">
+    <span class="nav-icon">📅</span> ตารางเรียน
+  </a>
+
+  <span class="nav-section-title">บัญชี</span>
+  <a class="nav-item" onclick="showSection('profile')" href="#">
+    <span class="nav-icon">👤</span> โปรไฟล์
+  </a>
+
+  <div class="sidebar-bottom">
+    <div class="user-card">
+      <div class="user-avatar" id="sidebarAvatar">?</div>
+      <div style="flex:1;min-width:0;">
+        <div class="user-name" id="sidebarName">กำลังโหลด...</div>
+        <div class="user-email" id="sidebarEmail">—</div>
+      </div>
+      <button class="logout-btn" onclick="logout()" title="ออกจากระบบ">⏻</button>
+    </div>
+  </div>
+</aside>
+
+<!-- ===== MAIN ===== -->
+<main class="main-content">
+
+  <!-- ── HOME SECTION ── -->
+  <section id="sec-home">
+    <div class="page-header">
+      <div>
+        <div class="page-title">สวัสดี, <span id="userName">นักเรียน</span>! 👋</div>
+        <div class="page-date" id="todayDate">—</div>
+      </div>
+      <button class="add-btn" onclick="openAddHw()">➕ เพิ่มการบ้าน</button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">📝 การบ้านทั้งหมด</div>
+        <div class="stat-value" id="statTotal" style="color:var(--accent2)">0</div>
+        <div class="stat-sub">รายการ</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">⏳ ยังไม่เสร็จ</div>
+        <div class="stat-value" id="statPending" style="color:var(--yellow)">0</div>
+        <div class="stat-sub">รายการ</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">✅ เสร็จแล้ว</div>
+        <div class="stat-value" id="statDone" style="color:var(--green)">0</div>
+        <div class="stat-sub">รายการ</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">🚨 ใกล้ถึงกำหนด</div>
+        <div class="stat-value" id="statUrgent" style="color:var(--red)">0</div>
+        <div class="stat-sub">ภายใน 2 วัน</div>
+      </div>
+    </div>
+
+    <!-- Grid -->
+    <div class="dash-grid">
+      <div class="dash-col">
+        <!-- Recent HW -->
+        <div class="card">
+          <div class="card-title">
+            📝 การบ้านล่าสุด
+            <button class="add-btn" style="margin-left:auto;font-size:12px;" onclick="openAddHw()">+ เพิ่ม</button>
+          </div>
+          <div id="recentHwList">
+            <div style="text-align:center;padding:32px;color:var(--text3);">
+              ยังไม่มีการบ้าน 🎉<br>
+              <small>กดปุ่ม + เพิ่มการบ้านเลย!</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mini Schedule -->
+        <div class="card">
+          <div class="card-title">
+            📅 ตารางเรียนวันนี้
+            <button class="add-btn" style="margin-left:auto;font-size:12px;" onclick="showSection('schedule')">ดูทั้งหมด →</button>
+          </div>
+          <div id="todaySchedule" style="font-size:13px;color:var(--text2);">
+            กำลังโหลด...
+          </div>
+        </div>
+      </div>
+
+      <!-- AI Chat -->
+          </div>
+        </div>
+    </div>
+  </section>
+
+  <!-- ── HOMEWORK SECTION ── -->
+  <section id="sec-homework" style="display:none;">
+    <div class="page-header">
+      <div>
+        <div class="page-title">📝 การบ้าน<span>ทั้งหมด</span></div>
+        <div class="page-date">จัดการงานที่ได้รับมอบหมาย</div>
+      </div>
+      <button class="add-btn" onclick="openAddHw()">➕ เพิ่มการบ้าน</button>
+    </div>
+
+    <!-- Filter -->
+    <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
+      <button class="add-btn filter-btn active" data-filter="all" onclick="filterHw('all',this)">📋 ทั้งหมด</button>
+      <button class="add-btn filter-btn" data-filter="pending" onclick="filterHw('pending',this)">⏳ ยังไม่เสร็จ</button>
+      <button class="add-btn filter-btn" data-filter="done" onclick="filterHw('done',this)">✅ เสร็จแล้ว</button>
+      <button class="add-btn filter-btn" data-filter="urgent" onclick="filterHw('urgent',this)">🚨 ด่วน</button>
+    </div>
+
+    <div class="card">
+      <div id="allHwList">กำลังโหลด...</div>
+    </div>
+  </section>
+
+  <!-- ── SCHEDULE SECTION ── -->
+  <section id="sec-schedule" style="display:none;">
+    <div class="page-header">
+      <div>
+        <div class="page-title">📅 ตาราง<span>เรียน</span></div>
+        <div class="page-date">คลิกช่องว่างเพื่อเพิ่มวิชา</div>
+      </div>
+      <button class="add-btn" onclick="clearSchedule()">🗑️ ล้างตาราง</button>
+    </div>
+    <div class="card" style="overflow-x:auto;">
+      <div id="scheduleGrid" style="min-width:600px;"></div>
+    </div>
+  </section>
+
+  <!-- ── AI FULL SECTION ── -->
+  <section id="sec-ai" style="display:none;">
+    <div class="page-header">
+      <div>
+        <div class="page-title">🤖 AI<span> ช่วยเรียน</span></div>
+        <div class="page-date">StudyBot — ผู้ช่วยการเรียนอัจฉริยะ</div>
+      </div>
+      <button class="add-btn" onclick="clearAIChat()">🗑️ ล้างบทสนทนา</button>
+    </div>
+    <div class="card" style="max-width:700px;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding:14px;
+                  background:rgba(124,111,247,0.1);border-radius:12px;border:1px solid rgba(124,111,247,0.2);">
+        <div style="font-size:32px;">🤖</div>
+        <div>
+          <div style="font-weight:600;color:var(--accent2);">StudyBot</div>
+          <div style="font-size:12px;color:var(--text3);">AI ช่วยอธิบายเนื้อหา • แนะนำการเรียน • ช่วยวางแผน</div>
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:6px;font-size:12px;color:var(--green);">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;"></div>
+          ออนไลน์
+        </div>
+      </div>
+
+      <!-- Suggestion chips -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+        <button class="chip chip-purple" style="cursor:pointer;" onclick="aiSuggest('อธิบายสมการเชิงเส้นให้หน่อยได้ไหม')">📐 คณิตศาสตร์</button>
+        <button class="chip chip-cyan" style="cursor:pointer;" onclick="aiSuggest('ช่วยอธิบายการสังเคราะห์แสงแบบง่ายๆ')">🔬 วิทยาศาสตร์</button>
+        <button class="chip chip-pink" style="cursor:pointer;" onclick="aiSuggest('วิธีเขียนเรียงความภาษาไทยที่ดี')">📖 ภาษาไทย</button>
+        <button class="chip chip-green" style="cursor:pointer;" onclick="aiSuggest('tips การจำศัพท์ภาษาอังกฤษ')">🌍 ภาษาอังกฤษ</button>
+        <button class="chip chip-yellow" style="cursor:pointer;" onclick="aiSuggest('วิธีวางแผนการเรียนให้มีประสิทธิภาพ')">📅 วางแผนการเรียน</button>
+      </div>
+
+      <div class="ai-messages" id="aiMessagesFullPage" style="max-height:400px;"></div>
+      <div class="ai-input-row" style="margin-top:16px;">
+        <input class="ai-input" id="aiInputFull" placeholder="พิมพ์คำถาม หรือเลือกหัวข้อด้านบน..."
+               onkeydown="if(event.key==='Enter')sendAIFull()">
+        <button class="ai-send" onclick="sendAIFull()">➤</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PROFILE SECTION ── -->
+  <section id="sec-profile" style="display:none;">
+    <div class="page-header">
+      <div class="page-title">👤 โปรไฟล์<span>ของฉัน</span></div>
+    </div>
+    <div class="dash-grid" style="grid-template-columns:1fr 1fr;">
+      <div class="card">
+        <div class="card-title">ข้อมูลส่วนตัว</div>
+        <div style="text-align:center;margin-bottom:24px;">
+          <div style="width:80px;height:80px;border-radius:20px;
+                      background:linear-gradient(135deg,var(--accent),var(--pink));
+                      display:flex;align-items:center;justify-content:center;
+                      font-size:36px;font-weight:700;color:white;
+                      margin:0 auto 12px;" id="profileAvatar">?</div>
+          <div style="font-size:20px;font-weight:700;" id="profileName">—</div>
+          <div style="font-size:13px;color:var(--text3);" id="profileGrade">—</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div style="display:flex;justify-content:space-between;padding:12px;background:var(--bg3);border-radius:10px;">
+            <span style="color:var(--text3);font-size:13px;">📧 อีเมล</span>
+            <span style="font-size:13px;" id="profileEmail">—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:12px;background:var(--bg3);border-radius:10px;">
+            <span style="color:var(--text3);font-size:13px;">📬 Gmail</span>
+            <span style="font-size:13px;" id="profileGmail">—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:12px;background:var(--bg3);border-radius:10px;">
+            <span style="color:var(--text3);font-size:13px;">📅 สมัครเมื่อ</span>
+            <span style="font-size:13px;" id="profileJoined">—</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">สถิติการเรียน</div>
+        <div style="display:flex;flex-direction:column;gap:16px;" id="profileStats"></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+</div>
+
+<!-- ===== ADD HOMEWORK MODAL ===== -->
+<div class="modal-overlay hidden" id="addHwModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">➕ เพิ่มการบ้าน</div>
+      <button class="modal-close" onclick="closeAddHw()">×</button>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">📚 วิชา</label>
+      <select id="hwSubject" class="form-select">
+        <option value="">เลือกวิชา</option>
+        <option>คณิตศาสตร์</option>
+        <option>วิทยาศาสตร์</option>
+        <option>ภาษาไทย</option>
+        <option>ภาษาอังกฤษ</option>
+        <option>สังคมศึกษา</option>
+        <option>ประวัติศาสตร์</option>
+        <option>ศิลปะ</option>
+        <option>พลศึกษา</option>
+        <option>คอมพิวเตอร์</option>
+        <option>อื่นๆ</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">📝 ชื่องาน/หัวข้อ</label>
+      <input id="hwTitle" class="form-input" placeholder="เช่น แบบฝึกหัดหน้า 45-50" type="text">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">📋 รายละเอียด (ไม่บังคับ)</label>
+      <textarea id="hwDesc" class="form-input" rows="3"
+                placeholder="รายละเอียดเพิ่มเติม..." style="resize:vertical;"></textarea>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="form-group">
+        <label class="form-label">📅 กำหนดส่ง</label>
+        <input id="hwDue" class="form-input" type="date">
+      </div>
+      <div class="form-group">
+        <label class="form-label">⚡ ความสำคัญ</label>
+        <select id="hwPriority" class="form-select">
+          <option value="low">🟢 ต่ำ</option>
+          <option value="med" selected>🟡 กลาง</option>
+          <option value="high">🔴 สูง/ด่วน</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:12px;margin-top:4px;">
+      <button class="btn btn-google" onclick="closeAddHw()" style="width:auto;padding:12px 20px;">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="submitAddHw()">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SCHEDULE CELL MODAL ===== -->
+<div class="modal-overlay hidden" id="schModal">
+  <div class="modal" style="max-width:380px;">
+    <div class="modal-header">
+      <div class="modal-title" id="schModalTitle">แก้ไขคาบเรียน</div>
+      <button class="modal-close" onclick="closeSchModal()">×</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">📚 วิชา (เว้นว่างเพื่อลบ)</label>
+      <select id="schSubject" class="form-select">
+        <option value="">— ว่าง —</option>
+        <option>คณิตศาสตร์</option>
+        <option>วิทยาศาสตร์</option>
+        <option>ภาษาไทย</option>
+        <option>ภาษาอังกฤษ</option>
+        <option>สังคมศึกษา</option>
+        <option>ประวัติศาสตร์</option>
+        <option>ศิลปะ</option>
+        <option>พลศึกษา</option>
+        <option>คอมพิวเตอร์</option>
+        <option>อื่นๆ</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:12px;margin-top:4px;">
+      <button class="btn btn-google" onclick="closeSchModal()" style="width:auto;padding:12px 20px;">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="saveSchCell()">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<style>
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+.filter-btn { opacity:.6; }
+.filter-btn.active { opacity:1; background:rgba(124,111,247,.3); border-color:var(--accent); }
+</style>
+
+<script src="auth.js"></script>
+<script src="app.js"></script>
+<script>
+// ── State ──────────────────────────────────────────────
+let currentSection = 'home';
+let currentUser = null;
+let aiHistory = [];
+let aiHistoryFull = [];
+let schEditKey = { time: null, day: null };
+let hwFilter = 'all';
+
+// ── Init ───────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  requireAuth();
+  currentUser = getSession();
+  initUser();
+  renderStats();
+  renderRecentHw();
+  renderTodaySchedule();
+  renderScheduleGrid();
+  renderAllHw();
+  renderProfile();
+
+  // Set today date
+  document.getElementById('todayDate').textContent =
+    new Date().toLocaleDateString('th-TH', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+  // Default HW due = tomorrow
+  const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
+  document.getElementById('hwDue').value = tomorrow.toISOString().split('T')[0];
+});
+
+function initUser() {
+  if (!currentUser) return;
+  document.getElementById('userName').textContent = currentUser.name.split(' ')[0];
+  document.getElementById('sidebarName').textContent = currentUser.name;
+  document.getElementById('sidebarEmail').textContent = currentUser.email;
+  document.getElementById('sidebarAvatar').textContent = currentUser.avatar || currentUser.name.charAt(0);
+  document.getElementById('sidebarGrade').textContent = currentUser.grade || 'นักเรียน';
+}
+
+// ── Section Navigation ─────────────────────────────────
+function showSection(id) {
+  document.querySelectorAll('section[id^="sec-"]').forEach(s => s.style.display = 'none');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('sec-' + id).style.display = 'block';
+  currentSection = id;
+  // Refresh data on section show
+  if (id === 'homework') renderAllHw();
+  if (id === 'schedule') renderScheduleGrid();
+  if (id === 'profile')  renderProfile();
+  if (id === 'ai') syncAIChat();
+  // Mark nav active
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.getAttribute('onclick')?.includes(`'${id}'`)) n.classList.add('active');
+  });
+  // Close sidebar on mobile
+  document.getElementById('sidebar').classList.remove('open');
+}
+
+// ── Stats ──────────────────────────────────────────────
+function renderStats() {
+  const hw = getHomework();
+  const done = hw.filter(h => h.done).length;
+  const pending = hw.filter(h => !h.done).length;
+  const urgent = hw.filter(h => !h.done && h.dueDate && getDaysLeft(h.dueDate) <= 2).length;
+  document.getElementById('statTotal').textContent = hw.length;
+  document.getElementById('statPending').textContent = pending;
+  document.getElementById('statDone').textContent = done;
+  document.getElementById('statUrgent').textContent = urgent;
+  document.getElementById('hwBadge').textContent = pending;
+}
+
+// ── Homework Rendering ─────────────────────────────────
+function hwItemHTML(h) {
+  const dl = getDaysLeft(h.dueDate);
+  const color = SUBJECT_COLORS[h.subject] || '#94a3b8';
+  return `
+    <div class="hw-item" id="hwi-${h.id}">
+      <div class="priority-dot p-${h.priority||'med'}"></div>
+      <div class="hw-check ${h.done?'done':''}" onclick="toggleHw('${h.id}')">
+        ${h.done?'✓':''}
+      </div>
+      <div class="hw-info">
+        <div class="hw-subject" style="color:${color}">${h.subject||'ไม่ระบุวิชา'}</div>
+        <div class="hw-title ${h.done?'done-text':''}">${h.title}</div>
+        ${h.desc ? `<div style="font-size:12px;color:var(--text3);margin-bottom:3px;">${h.desc}</div>` : ''}
+        <div class="hw-due ${dueLabelClass(dl)}">
+          📅 ${h.dueDate ? formatDate(h.dueDate) : 'ไม่มีกำหนด'}
+          ${dl !== null ? ` · ${dueLabelText(dl)}` : ''}
+        </div>
+      </div>
+      <button onclick="deleteHw('${h.id}')"
+              style="background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:4px;transition:all .2s;"
+              onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text3)'">🗑️</button>
+    </div>`;
+}
+
+function renderRecentHw() {
+  const hw = getHomework().slice(0, 5);
+  const el = document.getElementById('recentHwList');
+  if (!hw.length) {
+    el.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text3);">ยังไม่มีการบ้าน 🎉<br><small>กดปุ่ม + เพิ่มการบ้านเลย!</small></div>';
+    return;
+  }
+  el.innerHTML = hw.map(hwItemHTML).join('');
+}
+
+function renderAllHw() {
+  let hw = getHomework();
+  if (hwFilter === 'pending') hw = hw.filter(h => !h.done);
+  else if (hwFilter === 'done') hw = hw.filter(h => h.done);
+  else if (hwFilter === 'urgent') hw = hw.filter(h => !h.done && getDaysLeft(h.dueDate) <= 2);
+  const el = document.getElementById('allHwList');
+  if (!hw.length) {
+    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3);">ไม่มีรายการในหมวดนี้ 🎉</div>';
+    return;
+  }
+  el.innerHTML = hw.map(hwItemHTML).join('');
+}
+
+function filterHw(f, btn) {
+  hwFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAllHw();
+}
+
+function toggleHw(id) {
+  toggleHomework(id);
+  renderStats(); renderRecentHw(); renderAllHw();
+}
+function deleteHw(id) {
+  if (!confirm('ลบการบ้านนี้?')) return;
+  deleteHomework(id);
+  renderStats(); renderRecentHw(); renderAllHw();
+}
+
+// ── Add HW Modal ───────────────────────────────────────
+function openAddHw() { document.getElementById('addHwModal').classList.remove('hidden'); }
+function closeAddHw() { document.getElementById('addHwModal').classList.add('hidden'); }
+function submitAddHw() {
+  const subject  = document.getElementById('hwSubject').value;
+  const title    = document.getElementById('hwTitle').value.trim();
+  const desc     = document.getElementById('hwDesc').value.trim();
+  const dueDate  = document.getElementById('hwDue').value;
+  const priority = document.getElementById('hwPriority').value;
+  if (!title) { showToast('กรุณากรอกชื่องาน', 'error'); return; }
+  addHomework({ subject, title, desc, dueDate, priority });
+  closeAddHw();
+  document.getElementById('hwTitle').value = '';
+  document.getElementById('hwDesc').value = '';
+  document.getElementById('hwSubject').value = '';
+  renderStats(); renderRecentHw(); renderAllHw();
+  showToast('เพิ่มการบ้านสำเร็จ ✅', 'success');
+}
+
+// ── Today's Schedule ───────────────────────────────────
+function renderTodaySchedule() {
+  const sch = getSchedule();
+  const dayMap = {0:'อา',1:'จ',2:'อ',3:'พ',4:'พฤ',5:'ศ',6:'ส'};
+  const today = dayMap[new Date().getDay()];
+  const el = document.getElementById('todaySchedule');
+  if (!sch.days.includes(today)) {
+    el.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text3);">😊 วันนี้ไม่มีเรียน!</div>';
+    return;
+  }
+  const classes = sch.periods.map(t => ({ time: t, subject: sch.grid[t]?.[today] }))
+    .filter(c => c.subject);
+  if (!classes.length) {
+    el.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text3);">ยังไม่ได้กำหนดตารางเรียน — ไปตั้งค่าที่เมนู "ตารางเรียน"</div>';
+    return;
+  }
+  el.innerHTML = classes.map(c => {
+    const color = SUBJECT_COLORS[c.subject] || '#94a3b8';
+    return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);">
+      <div style="font-size:11px;color:var(--text3);width:40px;flex-shrink:0;">${c.time}</div>
+      <div style="width:3px;height:32px;border-radius:4px;background:${color};flex-shrink:0;"></div>
+      <div style="font-size:14px;font-weight:500;">${c.subject}</div>
+    </div>`;
+  }).join('') || '<div style="color:var(--text3);padding:12px;">ไม่มีชั่วโมงเรียน</div>';
+}
+
+// ── Schedule Grid ──────────────────────────────────────
+function renderScheduleGrid() {
+  const sch = getSchedule();
+  const todayIdx = new Date().getDay(); // 1=Mon
+  const dayToIdx = {จ:1,อ:2,พ:3,พฤ:4,ศ:5};
+  let html = `<div class="schedule-grid">
+    <div class="sch-header" style="background:transparent;"></div>
+    ${sch.days.map(d => `<div class="sch-header ${todayIdx===dayToIdx[d]?'today-col':''}" style="${todayIdx===dayToIdx[d]?'color:var(--accent2);':''}">วัน${d}</div>`).join('')}`;
+  sch.periods.forEach(t => {
+    html += `<div class="sch-time">${t}</div>`;
+    sch.days.forEach(d => {
+      const subj = sch.grid[t]?.[d];
+      const color = subj ? (SUBJECT_COLORS[subj] || '#6b7280') : '';
+      const isToday = todayIdx === dayToIdx[d];
+      html += `<div class="sch-cell ${subj?'has-class':''} ${isToday?'today-col':''}"
+        style="${subj?`background:${color}22;color:${color};border:1px solid ${color}44;`:''}"
+        onclick="openSchModal('${t}','${d}','${subj||''}')">
+        ${subj || '<span style="opacity:.3;font-size:10px;">+</span>'}
+      </div>`;
+    });
+  });
+  html += '</div>';
+  document.getElementById('scheduleGrid').innerHTML = html;
+}
+
+function openSchModal(time, day, current) {
+  schEditKey = { time, day };
+  document.getElementById('schModalTitle').textContent = `วัน${day} เวลา ${time}`;
+  document.getElementById('schSubject').value = current;
+  document.getElementById('schModal').classList.remove('hidden');
+}
+function closeSchModal() { document.getElementById('schModal').classList.add('hidden'); }
+function saveSchCell() {
+  const sch = getSchedule();
+  const subj = document.getElementById('schSubject').value;
+  sch.grid[schEditKey.time][schEditKey.day] = subj || null;
+  saveSchedule(sch);
+  closeSchModal();
+  renderScheduleGrid();
+  renderTodaySchedule();
+  showToast(subj ? `บันทึก "${subj}" แล้ว ✅` : 'ลบวิชาแล้ว', 'success');
+}
+function clearSchedule() {
+  if (!confirm('ล้างตารางเรียนทั้งหมด?')) return;
+  saveSchedule(getDefaultSchedule());
+  renderScheduleGrid();
+  renderTodaySchedule();
+  showToast('ล้างตารางแล้ว', 'info');
+}
+
+// ── AI Chat (sidebar) ──────────────────────────────────
+function appendMsg(containerId, role, text) {
+  const c = document.getElementById(containerId);
+  const div = document.createElement('div');
+  div.className = 'ai-msg' + (role==='user'?' user':'');
+  div.innerHTML = `
+    <div class="ai-avatar ${role==='user'?'user-av':'bot'}">${role==='user'?'👤':'🤖'}</div>
+    <div class="ai-bubble">${text.replace(/\n/g,'<br>')}</div>`;
+  c.appendChild(div);
+  c.scrollTop = c.scrollHeight;
+}
+function showLoading(containerId) {
+  const c = document.getElementById(containerId);
+  const div = document.createElement('div');
+  div.className = 'ai-msg'; div.id = 'ai-loading-' + containerId;
+  div.innerHTML = `<div class="ai-avatar bot">🤖</div>
+    <div class="ai-bubble"><div class="ai-loading">
+      <div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div>
+    </div></div>`;
+  c.appendChild(div); c.scrollTop = c.scrollHeight;
+}
+function removeLoading(containerId) {
+  const el = document.getElementById('ai-loading-' + containerId);
+  if (el) el.remove();
+}
+
+async function sendAI() {
+  const input = document.getElementById('aiInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  appendMsg('aiMessages', 'user', text);
+  aiHistory.push({ role: 'user', content: text });
+  showLoading('aiMessages');
+  try {
+    const reply = await askAI(aiHistory);
+    removeLoading('aiMessages');
+    appendMsg('aiMessages', 'bot', reply);
+    aiHistory.push({ role: 'assistant', content: reply });
+  } catch(e) {
+    removeLoading('aiMessages');
+    appendMsg('aiMessages', 'bot', 'ขอโทษนะ เกิดข้อผิดพลาด 😢 ลองใหม่อีกครั้งนะ');
+  }
+}
+
+async function sendAIFull() {
+  const input = document.getElementById('aiInputFull');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  appendMsg('aiMessagesFullPage', 'user', text);
+  aiHistoryFull.push({ role: 'user', content: text });
+  showLoading('aiMessagesFullPage');
+  try {
+    const reply = await askAI(aiHistoryFull);
+    removeLoading('aiMessagesFullPage');
+    appendMsg('aiMessagesFullPage', 'bot', reply);
+    aiHistoryFull.push({ role: 'assistant', content: reply });
+  } catch(e) {
+    removeLoading('aiMessagesFullPage');
+    appendMsg('aiMessagesFullPage', 'bot', 'ขอโทษนะ เกิดข้อผิดพลาด 😢');
+  }
+}
+
+function aiSuggest(text) {
+  document.getElementById('aiInputFull').value = text;
+  sendAIFull();
+}
+function syncAIChat() {
+  // Sync full-page chat with sidebar chat state
+}
+function clearAIChat() {
+  aiHistoryFull = [];
+  const c = document.getElementById('aiMessagesFullPage');
+  c.innerHTML = '';
+  appendMsg('aiMessagesFullPage', 'bot', 'สวัสดีครับ! เริ่มบทสนทนาใหม่แล้ว 😊 ถามอะไรได้เลยนะ!');
+  showToast('ล้างบทสนทนาแล้ว', 'info');
+}
+
+// ── Profile ────────────────────────────────────────────
+function renderProfile() {
+  if (!currentUser) return;
+  document.getElementById('profileAvatar').textContent = currentUser.avatar || currentUser.name.charAt(0);
+  document.getElementById('profileName').textContent = currentUser.name;
+  document.getElementById('profileGrade').textContent = currentUser.grade || 'ไม่ระบุชั้น';
+  document.getElementById('profileEmail').textContent = currentUser.email;
+  document.getElementById('profileGmail').textContent = currentUser.gmail || 'ไม่ได้ระบุ';
+  document.getElementById('profileJoined').textContent =
+    new Date(currentUser.createdAt||Date.now()).toLocaleDateString('th-TH');
+  const hw = getHomework();
+  const done = hw.filter(h => h.done).length;
+  const pct = hw.length ? Math.round(done/hw.length*100) : 0;
+  document.getElementById('profileStats').innerHTML = `
+    <div style="padding:14px;background:var(--bg3);border-radius:10px;">
+      <div style="font-size:12px;color:var(--text3);margin-bottom:6px;">การบ้านที่ทำเสร็จ</div>
+      <div style="font-size:24px;font-weight:700;color:var(--green);">${done} / ${hw.length}</div>
+      <div style="height:6px;background:var(--border);border-radius:4px;margin-top:8px;overflow:hidden;">
+        <div style="height:100%;width:${pct}%;background:var(--green);border-radius:4px;transition:width .6s;"></div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px;">${pct}% สำเร็จ</div>
+    </div>
+    <div style="padding:14px;background:var(--bg3);border-radius:10px;">
+      <div style="font-size:12px;color:var(--text3);margin-bottom:4px;">การบ้านค้างส่ง</div>
+      <div style="font-size:24px;font-weight:700;color:var(--red);">${hw.filter(h=>!h.done&&getDaysLeft(h.dueDate)<0).length}</div>
+    </div>
+    <div style="padding:14px;background:var(--bg3);border-radius:10px;">
+      <div style="font-size:12px;color:var(--text3);margin-bottom:4px;">งานทั้งหมด</div>
+      <div style="font-size:24px;font-weight:700;color:var(--accent2);">${hw.length}</div>
+    </div>`;
+}
+
+// Close modals on overlay click
+document.getElementById('addHwModal').addEventListener('click', function(e) {
+  if (e.target === this) closeAddHw();
+});
+document.getElementById('schModal').addEventListener('click', function(e) {
+  if (e.target === this) closeSchModal();
+});
+</script>
+</body>
+</html>
